@@ -3,7 +3,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
 # Custom
-downloads/
+downloads/*
+!downloads/.gitkeep
+config.py
+code-list.csv
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -143,11 +146,11 @@ dmypy.json
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
+#!.vscode/settings.json
+#!.vscode/tasks.json
+#!.vscode/launch.json
+#!.vscode/extensions.json
+#*.code-workspace
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
