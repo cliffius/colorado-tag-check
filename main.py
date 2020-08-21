@@ -136,7 +136,7 @@ def checkTag():
 
 def main():
     print(bcolors.HEADER + "Download will commence in two minutes..." + bcolors.ENDC)
-    time.sleep(2)
+    time.sleep(120)
 
     print("Checking for existing file...")
     pathExists  = os.path.isfile(path)
