@@ -59,8 +59,8 @@ def compareFiles(file_old, file_new):
     os.remove(file_old)        
     os.rename(file_new, file_old)
 
-    print('Old file: {0}').format(check1)
-    print('New file: {0}').format(check2)
+    print('Old file: {0}'.format(check1))
+    print('New file: {0}'.format(check2))
 
     # compare checksums
     if check1 == check2:
