@@ -4,7 +4,6 @@ import io
 import os.path
 import pandas as pd
 import requests
-import time
 import urllib.request
 from pdfminer3.layout import LAParams, LTTextBox
 from pdfminer3.pdfpage import PDFPage
@@ -16,8 +15,8 @@ from pdfminer3.converter import TextConverter
 
 ## vars
 url   = 'https://cpw.state.co.us/Documents/Leftover.pdf'
-path  = 'downloads/Leftover.pdf'
-path2 = 'downloads/Leftover_new.pdf'
+path  = 'Leftover.pdf'
+path2 = 'Leftover_new.pdf'
 
 
 class bcolors:
@@ -132,13 +131,13 @@ def checkTag():
             print()
 
     print(bcolors.BOLD + "Import complete." + bcolors.ENDC)
-    main()
+    print()
+    print('------------------')
+    print(bcolors.HEADER + "FINISHED" + bcolors.ENDC)
 
 
 def main():
-    print(bcolors.HEADER + "Download will commence in two minutes..." + bcolors.ENDC)
-    time.sleep(120)
-
+    print(bcolors.HEADER + "COLORADO-TAG-CHECK" + bcolors.ENDC)
     print("Checking for existing file...")
     pathExists  = os.path.isfile(path)
     path2Exists = os.path.isfile(path2)
@@ -158,7 +157,7 @@ def main():
         if newUpdate:
             checkTag()
         else:
-            main()            
+            print(bcolors.HEADER + "FINISHED" + bcolors.ENDC)         
 
     else:
         print("Not found.")
