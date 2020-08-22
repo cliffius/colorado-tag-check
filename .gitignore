@@ -3,8 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
 # Custom
-downloads/*
-!downloads/.gitkeep
+.gitignore
 config.py
 code-list.csv
 

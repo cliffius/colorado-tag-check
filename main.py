@@ -30,6 +30,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     ENDC = '\033[0m'
 
+
 ## functions
 def downloadFile(url, path):
     print(bcolors.HEADER + "Downloading PDF..." + bcolors.ENDC)
