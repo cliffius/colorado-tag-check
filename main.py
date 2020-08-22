@@ -32,24 +32,24 @@ class bcolors:
 
 ## functions
 def downloadFile(url, path):
-    print(bcolors.HEADER + "Downloading PDF..." + bcolors.ENDC)
+    print(bcolors.HEADER + 'Downloading PDF...' + bcolors.ENDC)
     with urllib.request.urlopen(url) as response, open(path, 'wb') as out_file:
         data = response.read()
         out_file.write(data)
-    print(bcolors.OKGREEN + "Complete!" + bcolors.ENDC)
+    print(bcolors.OKGREEN + 'Complete!' + bcolors.ENDC)
     print()
 
 
 def md5(fname):
     hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+    with open(fname, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b''):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
 def compareFiles(file_old, file_new):
-    print(bcolors.OKBLUE + "Comparing old file with new..." + bcolors.ENDC)
+    print(bcolors.OKBLUE + 'Comparing old file with new...' + bcolors.ENDC)
 
     # get checksums
     check1 = md5(file_old)
@@ -61,12 +61,12 @@ def compareFiles(file_old, file_new):
 
     # compare checksums
     if check1 == check2:
-        print(bcolors.FAIL + "No new copy found." + bcolors.ENDC)
+        print(bcolors.FAIL + 'No new copy found.' + bcolors.ENDC)
         print()
         return False
         
     else:
-        print(bcolors.OKGREEN + "New copy found!" + bcolors.ENDC)   
+        print(bcolors.OKGREEN + 'New copy found!' + bcolors.ENDC)   
         print()  
         return True
 
@@ -89,61 +89,89 @@ def scanPDF(path):
     return pdfText
 
 
-def sendEmail():
-    print(bcolors.WARNING + "Sending email notification..." + bcolors.ENDC)
+def sendEmail(tags):
+    print(bcolors.WARNING + 'Sending email notification...' + bcolors.ENDC)
+
+    # check if multiple tags
+    if len(tags) > 1:
+        tagSubj = 'Colorado Tags Available!'
+        var0 = 'tags are'
+        var2 = 'those tags'
+        
+    else:
+        tagSubj = 'Colorado Tag ({1}) Available!'.format(tags[0])
+        var0 = 'tag is'
+        var2 = 'that tag'
+
+    tagMsg = '''        
+The following {0} available:
+
+{1}
+
+Get {2}, bitch!
+
+Love,
+C
+    '''.format(var0, '\n'.join(tags), var2)
 
     request_url = 'https://api.mailgun.net/v3/{0}/messages'.format(config.sandbox)
     request = requests.post(request_url, auth=('api', config.key), data={
         'from': 'Colorado Tag Check <getthattag@rightnow.com>',
-        'to': config.recipient,
-        'subject': 'Colorado Tag (#####) Available!',
-        'text': 'Get that tag, bitch!'
+        'to': config.recipients,
+        'subject': tagSubj,
+        'text': tagMsg
     })
     
     if request.status_code == 200:
-        print(bcolors.OKGREEN + "Message sent!" + bcolors.ENDC)
+        print(bcolors.OKGREEN + 'Message sent!' + bcolors.ENDC)
         print()
 
     else:
-        print(bcolors.FAIL + "Submission error." + bcolors.ENDC)
+        print(bcolors.FAIL + 'Submission error.' + bcolors.ENDC)
         print(request.json())
         print()
 
 
 def checkTag():
     print('------------------')
-    print(bcolors.HEADER + "Importing tags from file..." + bcolors.ENDC)
+    print(bcolors.HEADER + 'Importing tags from file...' + bcolors.ENDC)
     print()
 
     df = pd.read_csv('code-list.csv',header=None)
+    tagArray = []
+
     for index, field in df.iterrows():
         code = ''.join(e for e in field[0] if e.isalnum())
-        print(bcolors.BOLD + "Checking PDF for " + code + bcolors.ENDC)     
+        print(bcolors.BOLD + 'Checking PDF for ' + code + bcolors.ENDC)     
 
         pdfText = scanPDF(path)
 
         if code in pdfText:
-            print(bcolors.OKGREEN + "Tag found!" + bcolors.ENDC)   
-            sendEmail()
+            print(bcolors.OKGREEN + 'Tag found!' + bcolors.ENDC)
+            tagArray.append(code)            
         
         else:
-            print(bcolors.FAIL + "Tag not found." + bcolors.ENDC)
-            print()
+            print(bcolors.FAIL + 'Tag not found.' + bcolors.ENDC)
+            
+        print()
 
-    print(bcolors.BOLD + "Import complete." + bcolors.ENDC)
+    sendEmail(tagArray)
+
+    print(bcolors.BOLD + 'Import complete.' + bcolors.ENDC)
     print()
     print('------------------')
-    print(bcolors.HEADER + "FINISHED" + bcolors.ENDC)
+    print(bcolors.HEADER + 'FINISHED' + bcolors.ENDC)
+    print()
 
 
 def main():
-    print(bcolors.HEADER + "COLORADO-TAG-CHECK" + bcolors.ENDC)
-    print("Checking for existing file...")
+    print(bcolors.HEADER + 'COLORADO-TAG-CHECK' + bcolors.ENDC)
+    print('Checking for existing file...')
     pathExists  = os.path.isfile(path)
     path2Exists = os.path.isfile(path2)
 
     if pathExists:
-        print("Found.")
+        print('Found.')
         print()
 
         # delete copy just in case
@@ -157,10 +185,11 @@ def main():
         if newUpdate:
             checkTag()
         else:
-            print(bcolors.HEADER + "FINISHED" + bcolors.ENDC)         
+            print(bcolors.HEADER + 'FINISHED' + bcolors.ENDC)
+            print()     
 
     else:
-        print("Not found.")
+        print('Not found.')
         print()
         downloadFile(url, path)
         checkTag()
