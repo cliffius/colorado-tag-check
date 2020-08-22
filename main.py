@@ -1,5 +1,5 @@
 import config
-import hashlib
+import filecmp
 import io
 import os.path
 import pandas as pd
@@ -40,33 +40,16 @@ def downloadFile(url, path):
     print()
 
 
-def md5(fname):    
-    with open(fname, 'rb') as fh:
-        hash_md5 = hashlib.md5()
-        while True:
-            data = fh.read(8192)
-            if not data:
-                break
-            hash_md5.update(data)
-        return hash_md5.hexdigest()
-
-
 def compareFiles(file_old, file_new):
     print(bcolors.OKBLUE + 'Comparing old file with new...' + bcolors.ENDC)
-
-    # get checksums
-    check1 = md5(file_old)
-    check2 = md5(file_new)
+    sameFile = filecmp.cmp(file_old, file_new)
 
     # delete/rename files
     os.remove(file_old)        
     os.rename(file_new, file_old)
 
-    print('Old file: {0}'.format(check1))
-    print('New file: {0}'.format(check2))
-
     # compare checksums
-    if check1 == check2:
+    if sameFile:
         print(bcolors.FAIL + 'No new copy found.' + bcolors.ENDC)
         print()
         return False
