@@ -99,19 +99,19 @@ def sendEmail(tags):
         var2 = 'those tags'
         
     else:
-        tagSubj = 'Colorado Tag ({1}) Available!'.format(tags[0])
+        tagSubj = 'Colorado Tag ({0}) Available!'.format(tags[0])
         var0 = 'tag is'
         var2 = 'that tag'
 
     tagMsg = '''        
-    The following {0} available:
+The following {0} available:
 
-    {1}
+{1}
 
-    Get {2}, bitch!
+Get {2}, bitch!
 
-    Love,
-    C
+Love,
+C
     '''.format(var0, '\n'.join(tags), var2)
 
     request_url = 'https://api.mailgun.net/v3/{0}/messages'.format(config.sandbox)
