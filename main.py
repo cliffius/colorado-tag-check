@@ -40,12 +40,15 @@ def downloadFile(url, path):
     print()
 
 
-def md5(fname):
-    hash_md5 = hashlib.md5()
-    with open(fname, 'rb') as f:
-        for chunk in iter(lambda: f.read(4096), b''):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+def md5(fname):    
+    with open(fname, 'rb') as fh:
+        hash_md5 = hashlib.md5()
+        while True:
+            data = fh.read(8192)
+            if not data:
+                break
+            hash_md5.update(data)
+        return hash_md5.hexdigest()
 
 
 def compareFiles(file_old, file_new):
