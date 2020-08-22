@@ -128,12 +128,11 @@ def checkTag():
 
     df = pd.read_csv('code-list.csv',header=None)
     tagArray = []
+    pdfText = scanPDF(path)
 
     for index, field in df.iterrows():
         code = ''.join(e for e in field[0] if e.isalnum())
-        print(bcolors.BOLD + 'Checking PDF for ' + code + bcolors.ENDC)     
-
-        pdfText = scanPDF(path)
+        print(bcolors.BOLD + 'Checking PDF for ' + code + bcolors.ENDC)
 
         if code in pdfText:
             print(bcolors.OKGREEN + 'Tag found!' + bcolors.ENDC)
@@ -144,7 +143,8 @@ def checkTag():
             
         print()
 
-    sendEmail(tagArray)
+    if len(tagArray) > 0:
+        sendEmail(tagArray)
 
     print(bcolors.BOLD + 'Import complete.' + bcolors.ENDC)
     print()
