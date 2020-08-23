@@ -3,6 +3,7 @@ import filecmp
 import io
 import os.path
 import pandas as pd
+import pickle
 import requests
 import urllib.request
 from pdfminer3.layout import LAParams, LTTextBox
@@ -79,20 +80,22 @@ def scanPDF(path):
 
 
 def sendEmail(tags):
-    print(bcolors.WARNING + 'Sending email notification...' + bcolors.ENDC)
 
-    # check if multiple tags
-    if len(tags) > 1:
-        tagSubj = 'Colorado Tags Available!'
-        var0 = 'tags are'
-        var2 = 'those tags'
-        
-    else:
-        tagSubj = 'Colorado Tag ({0}) Available!'.format(tags[0])
-        var0 = 'tag is'
-        var2 = 'that tag'
+    def composeEmail():
+        print(bcolors.WARNING + 'Sending \'Tags Available\' mail notification...' + bcolors.ENDC)
 
-    tagMsg = '''        
+        # check if multiple tags
+        if len(tags) > 1:
+            tagSubj = 'Colorado Tags Available!'
+            var0 = 'tags are'
+            var2 = 'those tags'
+            
+        else:
+            tagSubj = 'Colorado Tag ({0}) Available!'.format(tags[0])
+            var0 = 'tag is'
+            var2 = 'that tag'
+
+        tagMsg = '''        
 The following {0} available:
 
 {1}
@@ -101,24 +104,114 @@ Get {2}, bitch!
 
 Love,
 C
-    '''.format(var0, '\n'.join(tags), var2)
+        '''.format(var0, '\n'.join(tags), var2)
 
-    request_url = 'https://api.mailgun.net/v3/{0}/messages'.format(config.sandbox)
-    request = requests.post(request_url, auth=('api', config.key), data={
-        'from': 'Colorado Tag Check <getthattag@rightnow.com>',
-        'to': config.recipients,
-        'subject': tagSubj,
-        'text': tagMsg
-    })
-    
-    if request.status_code == 200:
-        print(bcolors.OKGREEN + 'Message sent!' + bcolors.ENDC)
-        print()
+        request_url = 'https://api.mailgun.net/v3/{0}/messages'.format(config.sandbox)
+        request = requests.post(request_url, auth=('api', config.key), data={
+            'from': 'Colorado Tag Check <getthattag@rightnow.com>',
+            'to': config.recipients,
+            'subject': tagSubj,
+            'text': tagMsg
+        })
+        
+        if request.status_code == 200:
+            print(bcolors.OKGREEN + 'Message sent for: {0}'.format(tags) + bcolors.ENDC)
+
+        else:
+            print(bcolors.FAIL + 'Submission error.' + bcolors.ENDC)
+            print(request.json())
+
+    def composeGoneEmail():
+        print(bcolors.WARNING + 'Sending \'Tags Gone\' email notification...' + bcolors.ENDC)
+
+        # check if multiple tags
+        if len(take_off_list) > 1:
+            tagSubj = 'Colorado Tags Gone!'
+            var0 = 'tags are'
+            var2 = 'them'
+            
+        else:
+            tagSubj = 'Colorado Tag ({0}) is Gone!'.format(take_off_list[0])
+            var0 = 'tag is'
+            var2 = 'it'
+
+        tagMsg = '''        
+The following {0} no longer available:
+
+{1}
+
+Hope you got {2}!
+
+Love,
+C
+        '''.format(var0, '\n'.join(take_off_list), var2)
+
+        request_url = 'https://api.mailgun.net/v3/{0}/messages'.format(config.sandbox)
+        request = requests.post(request_url, auth=('api', config.key), data={
+            'from': 'Colorado Tag Check <getthattag@rightnow.com>',
+            'to': config.recipients,
+            'subject': tagSubj,
+            'text': tagMsg
+        })
+        
+        if request.status_code == 200:
+            print(bcolors.OKGREEN + 'Message sent for: {0}'.format(take_off_list) + bcolors.ENDC)
+
+        else:
+            print(bcolors.FAIL + 'Submission error.' + bcolors.ENDC)
+            print(request.json())
+
+    # possible tags
+    print('Tags on list: {0}'.format(tags))
+
+    # get tags previously sent
+    if os.path.isfile('tags-emailed.pkl'):
+        with open('tags-emailed.pkl', 'rb') as f:
+            already_emailed = pickle.load(f)
+            already_emailed = list(dict.fromkeys(already_emailed)) # remove possible duplicates
+            print('Loading tags-emailed.pkl: {0}'.format(already_emailed))
+        
+        # compare tags_done and tags    
+        dont_email = list(set(tags).intersection(already_emailed))   
+        print('Don\'t email: {0}'.format(dont_email))
+        
+        if len(dont_email) > 0:
+            # remove 'dont_email' tags out of tags         
+            for item in dont_email:
+                tags.remove(item)
+
+            # send 'get tags' email
+            if len(tags) > 0:
+                composeEmail()
+
+            else:
+                print('No email needed')        
+        
+        else:
+            composeEmail()
+
+        # update pickle
+        emailed_tags = dont_email + tags
+        take_off_list = list(set(already_emailed).difference(dont_email))
+        print('Removing: {0}'.format(take_off_list))    
+        
+
+        if len(take_off_list) > 0:
+            composeGoneEmail()
+
+        # save data
+        print('Saving tags-emailed.pkl: {0}'.format(emailed_tags))
+        with open('tags-emailed.pkl', 'wb') as f:
+            pickle.dump(emailed_tags, f)        
 
     else:
-        print(bcolors.FAIL + 'Submission error.' + bcolors.ENDC)
-        print(request.json())
-        print()
+        composeEmail()
+
+        print('Saving tags-emailed.pkl: {0}'.format(tags))
+
+        # save data
+        with open('tags-emailed.pkl', 'wb') as f:
+            pickle.dump(tags, f)    
 
 
 def checkTag():
@@ -143,12 +236,16 @@ def checkTag():
             
         print()
 
+    print(bcolors.BOLD + 'Import complete.' + bcolors.ENDC)
+    print('------------------')
+    print()    
+
     if len(tagArray) > 0:
         sendEmail(tagArray)
 
-    print(bcolors.BOLD + 'Import complete.' + bcolors.ENDC)
     print()
     print('------------------')
+    print()    
     print(bcolors.HEADER + 'FINISHED' + bcolors.ENDC)
     print()
 
