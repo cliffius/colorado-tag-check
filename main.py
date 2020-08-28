@@ -100,6 +100,8 @@ The following {0} available:
 
 {1}
 
+https://www.cpwshop.com/purchaseprivilege.page
+
 Get {2}, bitch!
 
 Love,
@@ -169,7 +171,7 @@ C
         with open('tags-emailed.pkl', 'rb') as f:
             already_emailed = pickle.load(f)
             already_emailed = list(dict.fromkeys(already_emailed)) # remove possible duplicates
-            print('Loading tags-emailed.pkl: {0}'.format(already_emailed))
+            print('Already emailed (tags-emailed.pkl): {0}'.format(already_emailed))
         
         # compare tags_done and tags    
         dont_email = list(set(tags).intersection(already_emailed))   
@@ -187,7 +189,7 @@ C
             else:
                 print('No email needed')        
         
-        else:
+        elif len(tags) > 0:
             composeEmail()
 
         # update pickle
@@ -240,8 +242,7 @@ def checkTag():
     print('------------------')
     print()    
 
-    if len(tagArray) > 0:
-        sendEmail(tagArray)
+    sendEmail(tagArray)
 
     print()
     print('------------------')
@@ -263,7 +264,7 @@ def main():
         # delete copy just in case
         if path2Exists:
             os.remove(path2)
-
+        
         # download new copy and compare
         downloadFile(url, path2)        
         newUpdate = compareFiles(path, path2) # returns True if files are same
@@ -272,7 +273,7 @@ def main():
             checkTag()
         else:
             print(bcolors.HEADER + 'FINISHED' + bcolors.ENDC)
-            print()     
+            print()
 
     else:
         print('Not found.')
